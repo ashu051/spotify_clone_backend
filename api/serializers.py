@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import CustomUser,Artist,Album,Playlist,Podcast,Premium,Song
+from django.utils import timezone
 # class User_Liked_SongsSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = User_Liked_Songs
@@ -164,4 +165,51 @@ class MainRegister(serializers.ModelSerializer):
         user.save()
         print('!!!!!!!!!!!!!!!!!')
         print(user)
+        return user
+from django.conf import settings
+from .utils import send_otp
+import random
+from django.utils import timezone
+from datetime import datetime,timedelta
+class UserSerializer(serializers.ModelSerializer):
+    password1 = serializers.CharField(
+        write_only=True,
+        min_length = settings.MIN_PASSWORD_LENGTH,
+        error_messages={
+            "min_length":f"Password must be longer than {settings.MIN_PASSWORD_LENGTH} characters."
+        }
+    )
+    password2 = serializers.CharField(
+        write_only=True,
+        min_length = settings.MIN_PASSWORD_LENGTH,
+        error_messages={
+            "min_length":f"Password must be longer than {settings.MIN_PASSWORD_LENGTH} characters."
+        }
+    )
+    class Meta:
+        model = CustomUser
+        fields=(
+            "phone_number",
+            "email",
+            "password1",
+            "password2"
+        )
+    def validate(self, data):
+        if data["password1"]!=data["password2"]:
+            raise serializers.ValidationError("Passwords do not match")
+        return data
+        
+    def create(self,validated_data):
+        otp = random.randint(1000,9999)
+        otp_expiry = datetime.now()+timedelta(minutes=10)
+        user  = CustomUser(
+            phone_number = validated_data["phone_number"],
+            email = validated_data["email"],
+            otp = otp,
+            otp_expiry=otp_expiry,
+            max_otp_try= settings.MAX_OTP_TRY
+        )
+        user.set_password(validated_data['password1'])
+        user.save()
+        send_otp(validated_data["phone_number"],otp)
         return user

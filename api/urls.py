@@ -5,7 +5,9 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 from api import views
 # router.register('user_like_song',views.UserLikeSongViewSet,basename='user_like_song')
+router.register('user',views.UserViewSet,basename='user')
 
+router.register('verified-user',views.RegisterViewSet,basename='verified')
 
 # artist urls
 router.register('artist',views.ArtistOnlyViewSet,basename='artist')

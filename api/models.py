@@ -8,13 +8,33 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model
 from .manager import UserManger
+from django.conf import settings
+
+from django.core.validators import RegexValidator,validate_email
+phone_regex  = RegexValidator(
+    regex=r"^\d{10}" ,message="Phone Number must be 10 digits"
+)
+
+
+
 class CustomUser(AbstractUser):
     username = None
     user_id = models.BigAutoField(primary_key=True)  
     password = models.TextField()  
-    phone_number =models.TextField(unique=True)
+    phone_number =models.TextField(unique=True,validators=[phone_regex])
+    email  =models.EmailField(
+        max_length=50,
+        blank=True,
+        null=True,
+        validators=[validate_email]
+    )
     user_profile_image = models.ImageField(upload_to="profile")
     country = models.TextField()
+    otp = models.CharField(max_length=6)
+    otp_expiry = models.DateTimeField(blank=True,null=True)
+    max_otp_try = models.CharField(max_length=2,default=settings.MAX_OTP_TRY)
+    otp_max_out = models.DateTimeField(blank=True,null=True)
+    verification_status = models.BooleanField(default=False)
     objects=UserManger()
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS=[]

@@ -133,3 +133,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+MAX_OTP_TRY=3
+MIN_PASSWORD_LENGTH=10
+SMS_API_KEY = "49a97fa3-27fb-11ee-addf-0200cd936042"
