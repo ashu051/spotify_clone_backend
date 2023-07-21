@@ -9,13 +9,31 @@ from rest_framework.decorators import api_view, permission_classes,authenticatio
 from .models import *
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.authtoken.models import Token
 class RegisterViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = RegistrationSerializer
 # class UserLikeSongViewSet(viewsets.ModelViewSet):
 #     queryset = User_Liked_Songs.objects.all()
 #     serializer_class =User_Liked_SongsSerializer
+class RegisterUser(APIView):
+    def post(self,request):
+        serializer = MainRegister(data = request.data)
+        print(request.data)
+        if not serializer.is_valid():
+            print('***************************')
+            print(serializer.errors)
+            return Response({"insecure":serializer.errors}) 
+        print('############################')
+        serializer.save()
+        # print(serializer.data)
+        user = CustomUser.objects.get(phone_number=serializer.data['phone_number'])
+        token_obj,_ = Token.objects.get_or_create(user =user)
+        return Response(serializer.data, status=status.HTTP_200_OK) 
 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated        
+    
 
 
 # Premium things
@@ -39,11 +57,12 @@ class PremiumViewSet(viewsets.ModelViewSet):
 class PremiumDetailsViewSet(viewsets.ModelViewSet):
     queryset = Premium.objects.all()
     serializer_class = PremiumDetailsSerializer
-    
+
     # def get_queryset(self):
     #     # Filter playlists by the current authenticated user
     #     user = self.request.user
     #     return Premium.objects.filter(user=user)
+    
     
     
 #Artist Things

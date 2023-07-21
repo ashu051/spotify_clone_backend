@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from .manager import UserManger
 class CustomUser(AbstractUser):
     username = None
-    user_id = models.IntegerField(primary_key=True)  
+    user_id = models.BigAutoField(primary_key=True)  
     password = models.TextField()  
     phone_number =models.TextField(unique=True)
     user_profile_image = models.ImageField(upload_to="profile")

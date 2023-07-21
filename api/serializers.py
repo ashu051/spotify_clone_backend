@@ -98,10 +98,8 @@ class SongDetailsSerializer(serializers.ModelSerializer):
     def get_liked_by(self, song):
         # Retrieve the liked_by users related to the song
         liked_by_users = song.liked_by.all()
-
         # Serialize the user data using RegistrationSerializer
         liked_by_users_data = RegistrationSerializer(liked_by_users, many=True).data
-
         return liked_by_users_data      
         
        
@@ -147,3 +145,23 @@ class PremiumOnlySerializer(serializers.ModelSerializer):
     class Meta:
         model = Premium
         fields = '__all__'
+
+
+
+
+class MainRegister(serializers.ModelSerializer):
+    
+    class Meta:
+        model = CustomUser
+        fields=['phone_number','password']
+    def create(self,validated_data):
+        user = CustomUser.objects.create(phone_number=validated_data['phone_number'],
+                                         )
+        print(user)
+        password=validated_data['password']
+        print('-------------------------------------------------------')
+        user.set_password(password)
+        user.save()
+        print('!!!!!!!!!!!!!!!!!')
+        print(user)
+        return user

@@ -4,7 +4,6 @@ from django.conf import settings
 from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 from api import views
-router.register('register',views.RegisterViewSet,basename='resgis')
 # router.register('user_like_song',views.UserLikeSongViewSet,basename='user_like_song')
 
 
@@ -45,5 +44,6 @@ router.register('song-details',views.SongDetailsViewSet,basename='song-details')
 
 urlpatterns = [
 path('',include(router.urls)),
+path('register/',views.RegisterUser.as_view())
 
 ]
