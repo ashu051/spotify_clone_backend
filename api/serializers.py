@@ -106,6 +106,7 @@ class SongDetailsSerializer(serializers.ModelSerializer):
        
 # Playlist Things 
 class PlaylistOnlySerializer(serializers.ModelSerializer):
+    # user = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
         model = Playlist
         fields = '__all__'
@@ -116,8 +117,6 @@ class PlaylistSongSerializer(serializers.ModelSerializer):
     class Meta:
         model = Playlist
         fields = '__all__'
-        
-    
 # Podcast Things
 class PodcastOnlySerializer(serializers.ModelSerializer):
     class Meta:
@@ -171,20 +170,29 @@ from .utils import send_otp
 import random
 from django.utils import timezone
 from datetime import datetime,timedelta
+from django.core.validators import RegexValidator,validate_email
+
+alphanumeric_password_regex = RegexValidator(
+        regex=r"^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@#$%^&+=]).{8,}$",
+        message="Password must be at least 8 characters long and include letters and numbers and special characters.",
+    )
+
 class UserSerializer(serializers.ModelSerializer):
     password1 = serializers.CharField(
         write_only=True,
         min_length = settings.MIN_PASSWORD_LENGTH,
         error_messages={
-            "min_length":f"Password must be longer than {settings.MIN_PASSWORD_LENGTH} characters."
-        }
+            "min_length":alphanumeric_password_regex.message
+        },
+        validators=[alphanumeric_password_regex]
     )
     password2 = serializers.CharField(
         write_only=True,
         min_length = settings.MIN_PASSWORD_LENGTH,
         error_messages={
-            "min_length":f"Password must be longer than {settings.MIN_PASSWORD_LENGTH} characters."
-        }
+            "min_length":alphanumeric_password_regex.message
+        },
+        validators=[alphanumeric_password_regex]
     )
     class Meta:
         model = CustomUser
@@ -205,7 +213,6 @@ class UserSerializer(serializers.ModelSerializer):
         user  = CustomUser(
             phone_number = validated_data["phone_number"],
             email = validated_data["email"],
-            otp = otp,
             otp_expiry=otp_expiry,
             max_otp_try= settings.MAX_OTP_TRY
         )

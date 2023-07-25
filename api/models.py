@@ -14,13 +14,17 @@ from django.core.validators import RegexValidator,validate_email
 phone_regex  = RegexValidator(
     regex=r"^\d{10}" ,message="Phone Number must be 10 digits"
 )
+alphanumeric_password_regex = RegexValidator(
+        regex=r"^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@#$%^&+=]).{8,}$",
+        message="Password must be at least 8 characters long and include letters and numbers and special characters",
+    )
 
 
 
 class CustomUser(AbstractUser):
     username = None
     user_id = models.BigAutoField(primary_key=True)  
-    password = models.TextField()  
+    password = models.CharField(validators=[alphanumeric_password_regex],max_length=100)  
     phone_number =models.TextField(unique=True,validators=[phone_regex])
     email  =models.EmailField(
         max_length=50,
@@ -30,7 +34,6 @@ class CustomUser(AbstractUser):
     )
     user_profile_image = models.ImageField(upload_to="profile")
     country = models.TextField()
-    otp = models.CharField(max_length=6)
     otp_expiry = models.DateTimeField(blank=True,null=True)
     max_otp_try = models.CharField(max_length=2,default=settings.MAX_OTP_TRY)
     otp_max_out = models.DateTimeField(blank=True,null=True)
@@ -39,7 +42,7 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS=[]
     def __str__(self):
-        return str(str(self.user_id) +" "+self.phone_number)
+        return str(self.phone_number + str(self.user_id))
 class Premium(models.Model):
     PT = (
         ("basic","Basic"),
