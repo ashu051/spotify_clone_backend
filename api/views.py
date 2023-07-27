@@ -15,9 +15,10 @@ from django.utils import timezone
 from .pagination import *
 import datetime
 from rest_framework.filters import SearchFilter
+from django.contrib.auth.decorators import login_required
 
 from rest_framework.permissions import BasePermission
-
+@login_required(login_url='/login/')
 class IsOwnerOrReadOnly(BasePermission):
 	def has_object_permission(self, request, view, obj):
 		if request.method in ['GET', 'HEAD', 'OPTIONS']:
@@ -284,4 +285,37 @@ class UserViewSet(viewsets.ModelViewSet):
 		return Response(
 			"succesfully regenerate otp ",
    			status=status.HTTP_200_OK
-		)		
+		)	
+  	
+# from rest_framework.authtoken.models import Token
+# from rest_framework.response import Response
+# from rest_framework import status
+# from rest_framework.views import APIView
+# from rest_framework.viewsets import ViewSet
+# from django.contrib.auth import authenticate
+# from rest_framework.authentication import TokenAuthentication
+
+# class LoginView(APIView):
+#     authentication_classes = [TokenAuthentication]
+
+#     def post(self, request):
+#         serializer = LoginSerializer(data=request.data)
+#         if serializer.is_valid():
+#             phone_number = serializer.validated_data['phone_number']
+#             password = serializer.validated_data['password']
+
+#             user = authenticate(request, phone_number=phone_number, password=password)
+
+#             if user:
+#                 token, _ = Token.objects.get_or_create(user=user)
+#                 return Response({'token': token.key}, status=status.HTTP_200_OK)
+#             else:
+#                 return Response({'error': 'Invalid phone number or password'}, status=status.HTTP_401_UNAUTHORIZED)
+
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class LogoutView(viewsets.ModelViewSet):
+#     def create(self, request):
+#         # Simply delete the user's token to log them out
+#         request.user.auth_token.delete()
+#         return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
