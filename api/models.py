@@ -32,6 +32,7 @@ class CustomUser(AbstractUser):
         null=True,
         validators=[validate_email]
     )
+    otp = models.IntegerField(blank=True,null=True)
     user_profile_image = models.ImageField(upload_to="profile")
     country = models.TextField()
     otp_expiry = models.DateTimeField(blank=True,null=True)
@@ -42,7 +43,7 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS=[]
     def __str__(self):
-        return str(self.phone_number + str(self.user_id))
+        return str(self.phone_number)
 class Premium(models.Model):
     PT = (
         ("basic","Basic"),

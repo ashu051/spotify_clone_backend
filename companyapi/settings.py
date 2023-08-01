@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-aix*7hl1gxpzjr1v8&bd(atuxsj5d#@$tdi(egxgw%-&qjyzcx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 #Custom User 
 AUTH_USER_MODEL  = 'api.CustomUser'
@@ -42,11 +42,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
         'rest_framework',
         'api',
-        'rest_framework.authtoken'
+        'rest_framework.authtoken',
+            'corsheaders'
+
 
 ]
-
+CORS_ORIGIN_ALLOW_ALL=True
 MIDDLEWARE = [
+        'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -85,9 +88,9 @@ DATABASES = {
        'ENGINE': 'django.db.backends.postgresql_psycopg2',
        'NAME':'postgres',
        'USER': 'postgres',
-       'PASSWORD': 'root',
+       'PASSWORD': 'mysecretpassword',
        'HOST': 'localhost',
-       'PORT':'5433'
+       'PORT':'5432'
    }
 }
 
@@ -111,9 +114,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ]
+        'rest_framework.authentication.TokenAuthentication',
+       
+    ],
+     
 }
 
 # Internationalization
@@ -131,7 +135,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -140,3 +143,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MAX_OTP_TRY=3
 MIN_PASSWORD_LENGTH=10
 SMS_API_KEY = "49a97fa3-27fb-11ee-addf-0200cd936042"
+
+STATIC_URL = 'static/'
+import os
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
+
+# Media Settings
+
+MEDIA_URL = ''
+
+MEDIA_ROOT = ''
+print(BASE_DIR)
+# settings.py
+
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:4200',  # Replace this with the actual frontend URL
+#     # Add more allowed origins as needed
+# ]
+# # settings.py
+
+# # Example of additional CORS settings
+# CORS_ALLOW_HEADERS = ['Authorization', 'Content-Type']
+# CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+

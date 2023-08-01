@@ -34,16 +34,19 @@ class AlbumSongViewSet(viewsets.ModelViewSet):
 	queryset = Album.objects.all()
 	serializer_class = AlbumSongSerializer   
 	pagination_class  = MyLimitOffsetPagination
-	permission_classes = [IsAuthenticated]
+	# permission_classes = [IsAuthenticated]
 	def destroy(self, request, pk=None):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
+	def retrieve(self, request, *args, **kwargs):
+        # The Primary Key of the object is passed to the retrieve method through self.kwargs
+         object_id = self.kwargs['pk']
 class AlbumOnlyViewSet(viewsets.ModelViewSet):
 	queryset = Album.objects.all()
 	# print(queryset)
 	serializer_class = AlbumOnlySerializer   
 	pagination_class  = MyLimitOffsetPagination
-	permission_classes = [IsAuthenticated]
+	# permission_classes = [IsAuthenticated] 
 	def destroy(self, request, pk=None):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
@@ -178,13 +181,17 @@ class PlaylistUserViewSet(viewsets.ModelViewSet):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
 # ALBUM Things
+from django.shortcuts import get_object_or_404
 
 
 class AlbumArtistViewSet(viewsets.ModelViewSet):
 	queryset = Album.objects.all()
 	serializer_class = AlbumArtistSerializer  
-	pagination_class  = MyLimitOffsetPagination
-	permission_classes = [IsAuthenticated]
+	def retrieve(self, request, pk=None):
+		album = get_object_or_404(self.queryset, pk=pk)
+		serializer = AlbumArtistSerializer(album)
+		return Response(serializer.data)
+
 	def destroy(self, request, pk=None):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
@@ -217,9 +224,6 @@ class SongDetailsViewSet(viewsets.ModelViewSet):
 	def destroy(self, request, pk=None):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
-	def destroy(self, request, pk=None):
-		response = {'message': 'Delete function is not offered in this path.'}
-		return Response(response, status=status.HTTP_403_FORBIDDEN)
 from datetime import datetime,timedelta
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -234,7 +238,12 @@ class UserViewSet(viewsets.ModelViewSet):
 				"You are alredy verified",
 				status=status.HTTP_400_BAD_REQUEST
 			)
-		if(instance.otp == request.data.get("otp") and instance.otp_expiry  and timezone.now() < instance.otp_expiry):
+		print(str(instance.otp))
+		print(type(request.data.get("otp")))
+		print(instance.otp_expiry)
+		print(timezone.now())
+		print(instance.otp_expiry)
+		if(str(instance.otp) == request.data.get("otp") and timezone.now() < instance.otp_expiry):
 			instance.is_active=True
 			instance.otp_expiry = None
 			instance.max_otp_expiry=settings.MAX_OTP_TRY
@@ -293,7 +302,7 @@ class UserViewSet(viewsets.ModelViewSet):
 # from rest_framework.views import APIView
 # from rest_framework.viewsets import ViewSet
 # from django.contrib.auth import authenticate
-# from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import TokenAuthentication
 
 # class LoginView(APIView):
 #     authentication_classes = [TokenAuthentication]
@@ -319,3 +328,57 @@ class UserViewSet(viewsets.ModelViewSet):
 #         # Simply delete the user's token to log them out
 #         request.user.auth_token.delete()
 #         return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
+
+
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.response import Response
+from rest_framework import status
+
+class CustomObtainAuthToken(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK:
+            token = Token.objects.get(key=response.data['token'])
+            return Response({'token': token.key, 'user_id': token.user_id})
+        return response
+from django.contrib.auth import logout
+
+class LogoutView(APIView):
+    def post(self, request):
+        # Delete the user's token to log them out
+        try:
+            token = request.user.auth_token
+            token.delete()
+            print("Token deleted for user:", request.user)
+        except AttributeError:
+            print("No token found for user:", request.user)
+            pass
+
+        # Perform logout action if needed (Optional)
+        logout(request)
+
+        return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
+    
+class ProfileInfoView(APIView):
+    authentication_classes= [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        print(request.user)
+        user = request.user  # The authenticated user
+        serializer = ProfileSerializer(user)  # Use the ProfileSerializer to serialize user data
+        return Response(serializer.data)
+    def put(self, request):
+        user = request.user
+        serializer = ProfileSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def patch(self, request):
+        user = request.user
+        serializer = ProfileSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

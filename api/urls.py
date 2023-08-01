@@ -46,16 +46,22 @@ router.register('song-details',views.SongDetailsViewSet,basename='song-details')
 
 
 
-
+# router.register('profile', views.ProfileInfoView, basename='profile')
+# 
 # router.register('asongs',views.AlbumSongsView,basename='album-song')
 
 urlpatterns = [
 path('',include(router.urls)),
 path('register/',views.RegisterUser.as_view()),
 #  path('login/', views.LoginView.as_view(),name='login')
+    path('login/', views.CustomObtainAuthToken.as_view(), name='login'),
+    path('logout/', views.LogoutView.as_view(), name='logout'),
+    path('profile-info/', views.ProfileInfoView.as_view(), name='profile-info'),  # New URL for the profile info
+
 
 ]
 # from django.shortcuts import redirect
 
 # def login_redirect(request):
 #     return redirect('login')
+

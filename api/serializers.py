@@ -200,7 +200,12 @@ class UserSerializer(serializers.ModelSerializer):
             "phone_number",
             "email",
             "password1",
-            "password2"
+            "password2",
+            "first_name",
+            "last_name",
+            "country",
+            "user_profile_image",
+            "otp"
         )
     def validate(self, data):
         if data["password1"]!=data["password2"]:
@@ -213,10 +218,28 @@ class UserSerializer(serializers.ModelSerializer):
         user  = CustomUser(
             phone_number = validated_data["phone_number"],
             email = validated_data["email"],
+            first_name = validated_data['first_name'],
+            last_name = validated_data['last_name'],
+            country = validated_data['country'],
+            user_profile_image = validated_data['user_profile_image'],
             otp_expiry=otp_expiry,
-            max_otp_try= settings.MAX_OTP_TRY
+            max_otp_try= settings.MAX_OTP_TRY,
+            otp=otp
         )
         user.set_password(validated_data['password1'])
         user.save()
         send_otp(validated_data["phone_number"],otp)
         return user
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields=(
+            "phone_number",
+            "email",
+            "first_name",
+            "last_name",
+            "country",
+            "user_profile_image",
+        )
+        
