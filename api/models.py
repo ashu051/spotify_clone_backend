@@ -58,11 +58,13 @@ class Premium(models.Model):
 class Artist(models.Model):
     artist_name= models.TextField()
     artist_bio = models.TextField()
+    artist_image = models.ImageField(upload_to="profile")
     def __str__(self):
         return str(self.artist_name +" "+self.artist_bio)
 class Album(models.Model):
     artist = models.ManyToManyField(Artist,related_name='albums')
     album_name  = models.TextField()
+    album_image = models.ImageField(upload_to="profile")
     def __str__(self):
         return str(str(self.id) +" "+self.album_name)
     
@@ -71,15 +73,16 @@ class Song(models.Model):
     artist = models.ManyToManyField(Artist)
     song_name=models.TextField(max_length=70)
     song_duration = models.FloatField()
-    liked_by  = models.ManyToManyField(CustomUser)
+    liked_by  = models.ManyToManyField(CustomUser,blank=True)
     def __str__(self):
         return str(str(self.id) +" "+self.song_name )
 class Playlist(models.Model):
     playlist_name = models.TextField()
     user = models.ManyToManyField(CustomUser)
     song = models.ManyToManyField(Song,blank=True)
+    playlist_image = models.ImageField(upload_to="profile")
     def __str__(self):
-        return str(str(self.id) +" "+self.playlist_name +" "+self.user)
+        return str(str(self.id) +" "+self.playlist_name)
 
 # class User_Liked_Songs(models.Model):
 #     id = models.IntegerField(primary_key=True)

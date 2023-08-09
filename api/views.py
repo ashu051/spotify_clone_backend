@@ -18,6 +18,7 @@ from rest_framework.filters import SearchFilter
 from django.contrib.auth.decorators import login_required
 
 from rest_framework.permissions import BasePermission
+
 @login_required(login_url='/login/')
 class IsOwnerOrReadOnly(BasePermission):
 	def has_object_permission(self, request, view, obj):
@@ -33,14 +34,12 @@ class IsOwnerOrReadOnly(BasePermission):
 class AlbumSongViewSet(viewsets.ModelViewSet):
 	queryset = Album.objects.all()
 	serializer_class = AlbumSongSerializer   
-	pagination_class  = MyLimitOffsetPagination
+	pagination_class  = MyLimitOffsetPagination 
 	# permission_classes = [IsAuthenticated]
 	def destroy(self, request, pk=None):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
-	def retrieve(self, request, *args, **kwargs):
-        # The Primary Key of the object is passed to the retrieve method through self.kwargs
-         object_id = self.kwargs['pk']
+
 class AlbumOnlyViewSet(viewsets.ModelViewSet):
 	queryset = Album.objects.all()
 	# print(queryset)
@@ -51,17 +50,36 @@ class AlbumOnlyViewSet(viewsets.ModelViewSet):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
  #Playlist Things
+from django.views.decorators.csrf import csrf_exempt
+
+# @csrf_exempt
 class PlaylistOnlyViewSet(viewsets.ModelViewSet):
 	queryset = Playlist.objects.all()
 	serializer_class = PlaylistOnlySerializer
-	pagination_class  = MyLimitOffsetPagination
-	permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
-
+	# pagination_class  = MyLimitOffsetPagination
+	# permission_classes = [IsAuthenticated]
+	filter_backends = [SearchFilter]
+	search_fields = [
+		'^playlist_name'
+	]
+	@action(detail=True, methods=['get'])
+	def retrieve(self, request, pk=None):
+			playlist = get_object_or_404(self.queryset, pk=pk)
+			serializer = PlaylistOnlySerializer(playlist)
+			return Response(serializer.data)
+	@action(detail=True, methods=['patch'])
+	def add_song(self, request, pk=None):
+			playlist = get_object_or_404(self.queryset, pk=pk)
+			song_id = request.data.get('song_id')  # Assuming you send the song_id in the request data
+			playlist.song.add(song_id)
+			serializer = PlaylistOnlySerializer(playlist)
+			return Response(serializer.data)
 class PlaylistSongViewSet(viewsets.ModelViewSet):
 	queryset = Playlist.objects.all()
 	serializer_class = PlaylistSongSerializer
 	pagination_class  = MyLimitOffsetPagination
-	permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+	# permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+
 
 class RegisterViewSet(viewsets.ModelViewSet):
 	queryset = CustomUser.objects.all().filter(verification_status=True)
@@ -129,14 +147,21 @@ class PremiumDetailsViewSet(viewsets.ModelViewSet):
 	#     user = self.request.user
 	#     return Premium.objects.filter(user=user)
 	
-	
+class PlaylistViewSet(viewsets.ModelViewSet):
+    queryset = Playlist.objects.all()
+    serializer_class = PlaylistCreateSerializer
+    permission_classes = [IsAuthenticated]
 	
 #Artist Things
 class ArtistOnlyViewSet(viewsets.ModelViewSet):
 	queryset = Artist.objects.all()
 	serializer_class = ArtistOnlySerializer
 	pagination_class  = MyLimitOffsetPagination
-	permission_classes = [IsAuthenticated]
+	filter_backends = [SearchFilter]
+	search_fields = [
+		'^artist_name'
+	]
+	# permission_classes = [IsAuthenticated]
 	def destroy(self, request, pk=None):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
@@ -144,7 +169,8 @@ class ArtistSongViewSet(viewsets.ModelViewSet):
 	queryset = Artist.objects.all()
 	serializer_class = ArtistSongSerializer
 	pagination_class  = MyLimitOffsetPagination
-	permission_classes = [IsAuthenticated]
+
+	# permission_classes = [IsAuthenticated]
 	def destroy(self, request, pk=None):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
@@ -171,15 +197,18 @@ class PodcastArtistViewSet(viewsets.ModelViewSet):
 class PlaylistUserViewSet(viewsets.ModelViewSet):
 	serializer_class = PlaylistOnlySerializer
 	pagination_class  = MyLimitOffsetPagination
-	permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
-
+	permission_classes = [IsAuthenticated]
+	filter_backends = [SearchFilter]
+	search_fields = [
+		'^playlist_name'
+	]
 	def get_queryset(self):
 		# Filter playlists by the current authenticated user
 		user = self.request.user
 		return Playlist.objects.filter(user=user)
-	def destroy(self, request, pk=None):
-		response = {'message': 'Delete function is not offered in this path.'}
-		return Response(response, status=status.HTTP_403_FORBIDDEN)
+	# def destroy(self, request, pk=None):
+	# 	response = {'message': 'Delete function is not offered in this path.'}
+	# 	return Response(response, status=status.HTTP_403_FORBIDDEN)
 # ALBUM Things
 from django.shortcuts import get_object_or_404
 
@@ -195,7 +224,17 @@ class AlbumArtistViewSet(viewsets.ModelViewSet):
 	def destroy(self, request, pk=None):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
+class ArtistAlbumViewSet(viewsets.ModelViewSet):
+	queryset = Artist.objects.all()
+	serializer_class = ArtistSerializer  
+	def retrieve(self, request, pk=None):
+		artist = get_object_or_404(self.queryset, pk=pk)
+		serializer = ArtistSerializer(artist)
+		return Response(serializer.data)
 
+	def destroy(self, request, pk=None):
+		response = {'message': 'Delete function is not offered in this path.'}
+		return Response(response, status=status.HTTP_403_FORBIDDEN)
  # Song Detail
 class SongOnlyViewSet(viewsets.ModelViewSet):
 	queryset = Song.objects.all()
@@ -205,7 +244,7 @@ class SongOnlyViewSet(viewsets.ModelViewSet):
 		'^song_name'
 	]
 	pagination_class = MyLimitOffsetPagination
-	permission_classes = [IsAuthenticated]
+	# permission_classes = [IsAuthenticated]
 	def patch(self, request, *args, **kwargs):
 		song = self.get_object()
 		# Partially update the song with the data from the request

@@ -18,6 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+CSRF_TRUSTED_ORIGINS = [ "http://localhost:8000","http://localhost:4200","http://localhost:4200/"]
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-aix*7hl1gxpzjr1v8&bd(atuxsj5d#@$tdi(egxgw%-&qjyzcx'
@@ -115,7 +116,6 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-       
     ],
      
 }
@@ -156,12 +156,35 @@ MEDIA_ROOT = ''
 print(BASE_DIR)
 # settings.py
 
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:4200',  # Replace this with the actual frontend URL
-#     # Add more allowed origins as needed
-# ]
-# # settings.py
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+    "http://localhost:4200",
+    "http://localhost:8000",  
+    "http://127.0.0.1:8000", 
+]
+CSRF_TRUSTED_ORIGINS = [ "http://localhost:4200/",
+                        "http://localhost:4200/"
+    "http://localhost:8000",  
+    "http://127.0.0.1:8000"]
 
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:8000',
+    "http://localhost:4200",
+    "http://localhost:4200/"
+]
+# settings.py
+CSRF_COOKIE_SECURE = True
+# CSRF_COOKIE_DOMAIN = 'http://localhost:4200'
+# CSRF_COOKIE_PATH = '/'
 # # Example of additional CORS settings
 # CORS_ALLOW_HEADERS = ['Authorization', 'Content-Type']
 # CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']

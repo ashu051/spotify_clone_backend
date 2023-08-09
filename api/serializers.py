@@ -26,6 +26,17 @@ class AlbumArtistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Album
         fields = '__all__'
+class AlbummArtistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Album
+        fields = '__all__'
+class ArtistSerializer(serializers.ModelSerializer):
+    albums = AlbummArtistSerializer(many=True)
+    class Meta:
+        model = Artist
+        fields = '__all__'
+
+
 # Album with song
 class SongSerializer2(serializers.ModelSerializer):
     class Meta:
@@ -84,7 +95,10 @@ class ArtistSongSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-
+class PlaylistCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Playlist
+        fields = '__all__'
 #Song Serializer
 class SongOnlySerializer(serializers.ModelSerializer):
     class Meta:
@@ -106,11 +120,24 @@ class SongDetailsSerializer(serializers.ModelSerializer):
        
 # Playlist Things 
 class PlaylistOnlySerializer(serializers.ModelSerializer):
-    # user = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    song = SongOnlySerializer(many=True);
     class Meta:
         model = Playlist
         fields = '__all__'
-             
+        extra_kwargs = {
+            'song': {'required': False, 'allow_null': True}
+        }
+
+    def update(self, instance, validated_data):
+        song_ids = validated_data.pop('song', [])
+        instance = super().update(instance, validated_data)
+        if song_ids:
+            instance.song.add(*song_ids)
+        return instance
+    def validate(self, data):
+        print("Validating data:", data)
+        # Perform validation checks and return validated data
+        return data        
 class PlaylistSongSerializer(serializers.ModelSerializer):
     user = RegistrationSerializer(many=True)
     song = SongSerializer(many=True)

@@ -1,4 +1,4 @@
 from rest_framework.pagination import LimitOffsetPagination
 
 class MyLimitOffsetPagination(LimitOffsetPagination):
-    default_limit=12
+    default_limit=30
