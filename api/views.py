@@ -46,6 +46,10 @@ class AlbumOnlyViewSet(viewsets.ModelViewSet):
 	serializer_class = AlbumOnlySerializer   
 	pagination_class  = MyLimitOffsetPagination
 	# permission_classes = [IsAuthenticated] 
+	filter_backends = [SearchFilter]
+	search_fields = [
+		'^album_name'
+	]
 	def destroy(self, request, pk=None):
 		response = {'message': 'Delete function is not offered in this path.'}
 		return Response(response, status=status.HTTP_403_FORBIDDEN)
